@@ -1,0 +1,72 @@
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "pgaudit";
+
+REVOKE ALL ON DATABASE sem5lab1 FROM PUBLIC;
+
+CREATE ROLE app_reader;
+CREATE ROLE app_writer;
+CREATE ROLE app_owner;
+CREATE ROLE auditor;
+
+CREATE ROLE ddl_admin;
+CREATE ROLE dml_admin;
+CREATE ROLE security_admin;
+
+GRANT CONNECT ON DATABASE sem5lab1 TO app_reader;
+GRANT USAGE ON SCHEMA ref, app TO app_reader;
+ALTER DEFAULT PRIVILEGES IN SCHEMA ref GRANT SELECT ON TABLES TO app_reader;
+ALTER DEFAULT PRIVILEGES IN SCHEMA app GRANT SELECT ON TABLES TO app_reader;
+
+GRANT CONNECT ON DATABASE sem5lab1 TO app_writer;
+GRANT USAGE ON SCHEMA app TO app_writer;
+GRANT USAGE ON SCHEMA ref TO app_writer; 
+ALTER DEFAULT PRIVILEGES IN SCHEMA app GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_writer;
+ALTER DEFAULT PRIVILEGES IN SCHEMA ref GRANT SELECT ON TABLES TO app_writer;
+ALTER DEFAULT PRIVILEGES IN SCHEMA app GRANT USAGE ON SEQUENCES TO app_writer;
+
+GRANT CONNECT ON DATABASE sem5lab1 TO app_owner;
+GRANT USAGE ON SCHEMA ref, app TO app_owner;
+ALTER SCHEMA app OWNER TO app_owner;
+GRANT ALL PRIVILEGES ON SCHEMA app TO app_owner;
+ALTER DEFAULT PRIVILEGES IN SCHEMA app GRANT ALL PRIVILEGES ON TABLES TO app_owner;
+ALTER DEFAULT PRIVILEGES IN SCHEMA app GRANT TRIGGER ON TABLES TO app_owner;
+ALTER DEFAULT PRIVILEGES IN SCHEMA app GRANT ALL PRIVILEGES ON SEQUENCES TO app_owner;
+ALTER DEFAULT PRIVILEGES IN SCHEMA app GRANT ALL PRIVILEGES ON FUNCTIONS TO app_owner;
+ALTER DEFAULT PRIVILEGES IN SCHEMA ref GRANT SELECT ON TABLES TO app_writer;
+GRANT CREATE ON SCHEMA app TO app_owner;
+
+GRANT CONNECT ON DATABASE sem5lab1 TO auditor;
+GRANT USAGE ON SCHEMA audit TO auditor;
+ALTER DEFAULT PRIVILEGES IN SCHEMA audit GRANT SELECT ON TABLES TO auditor;
+ALTER DEFAULT PRIVILEGES IN SCHEMA app GRANT SELECT ON TABLES TO auditor;
+
+GRANT CONNECT ON DATABASE sem5lab1 TO ddl_admin;
+GRANT USAGE ON SCHEMA app, public, ref, stg, audit TO ddl_admin;
+GRANT CREATE ON SCHEMA app, public, ref, stg, audit TO ddl_admin;
+ALTER DEFAULT PRIVILEGES FOR ROLE ddl_admin IN SCHEMA app, public, ref, stg, audit 
+    GRANT REFERENCES, TRIGGER ON TABLES TO ddl_admin;
+ALTER DEFAULT PRIVILEGES FOR ROLE ddl_admin IN SCHEMA app, public, ref, stg, audit 
+    GRANT USAGE ON SEQUENCES TO ddl_admin;
+
+GRANT CONNECT ON DATABASE sem5lab1 TO dml_admin;
+GRANT USAGE ON SCHEMA ref, app, stg TO dml_admin;
+ALTER DEFAULT PRIVILEGES IN SCHEMA ref, app, stg 
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO dml_admin;
+ALTER DEFAULT PRIVILEGES IN SCHEMA ref, app, stg 
+    GRANT USAGE ON SEQUENCES TO dml_admin;
+
+GRANT CONNECT ON DATABASE sem5lab1 TO security_admin;
+GRANT USAGE ON SCHEMA app, ref, stg, audit TO security_admin;
+
+ALTER ROLE security_admin CREATEROLE;
+
+GRANT auditor TO security_admin;
+GRANT SELECT ON pg_roles TO security_admin; -- Видеть роли
+GRANT SELECT ON pg_auth_members TO security_admin; -- Видеть членство в ролях
+
+GRANT SELECT ON pg_tables TO security_admin; -- Всё о таблицах
+GRANT SELECT ON pg_namespace TO security_admin; -- Информация о схемах
+GRANT SELECT ON pg_stat_activity TO security_admin; -- Просмотр активных сеансов
+
+GRANT pg_read_all_settings TO security_admin; -- Просмотр конфиги БД
+GRANT pg_read_all_stats TO security_admin; -- Просмотр всей статистики БД
