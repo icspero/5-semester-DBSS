@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "pgaudit";
 
-REVOKE ALL ON DATABASE sem5lab1 FROM PUBLIC;
+REVOKE ALL ON DATABASE dbss FROM PUBLIC;
 
 CREATE ROLE app_reader;
 CREATE ROLE app_writer;
@@ -61,12 +61,12 @@ GRANT USAGE ON SCHEMA app, ref, stg, audit TO security_admin;
 ALTER ROLE security_admin CREATEROLE;
 
 GRANT auditor TO security_admin;
-GRANT SELECT ON pg_roles TO security_admin; -- Видеть роли
-GRANT SELECT ON pg_auth_members TO security_admin; -- Видеть членство в ролях
+GRANT SELECT ON pg_roles TO security_admin;
+GRANT SELECT ON pg_auth_members TO security_admin;
 
-GRANT SELECT ON pg_tables TO security_admin; -- Всё о таблицах
-GRANT SELECT ON pg_namespace TO security_admin; -- Информация о схемах
-GRANT SELECT ON pg_stat_activity TO security_admin; -- Просмотр активных сеансов
+GRANT SELECT ON pg_tables TO security_admin;
+GRANT SELECT ON pg_namespace TO security_admin;
+GRANT SELECT ON pg_stat_activity TO security_admin;
 
-GRANT pg_read_all_settings TO security_admin; -- Просмотр конфиги БД
-GRANT pg_read_all_stats TO security_admin; -- Просмотр всей статистики БД
+GRANT pg_read_all_settings TO security_admin;
+GRANT pg_read_all_stats TO security_admin;
